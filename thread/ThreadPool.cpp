@@ -8,6 +8,10 @@ using namespace BaseLib;
 
 namespace BaseLib
 {
+	/// <summary>
+	/// Initializes a new instance of the <see cref="ThreadPool"/> class.
+	/// </summary>
+	/// <param name="name">The name.</param>
 	ThreadPool::ThreadPool(const string& name)
 		: mutex_()
 		, name_(name)
@@ -15,6 +19,9 @@ namespace BaseLib
 	{
 	}
 
+	/// <summary>
+	/// Finalizes an instance of the <see cref="ThreadPool"/> class.
+	/// </summary>
 	ThreadPool::~ThreadPool()
 	{
 		if (running_)
@@ -23,16 +30,20 @@ namespace BaseLib
 		}
 	}
 
-	void ThreadPool::start(int32_t numThreads)
+	/// <summary>
+	/// Starts the specified num threads.
+	/// </summary>
+	/// <param name="numThreads">The num of threads.</param>
+	void ThreadPool::start(int numThreads)
 	{
 		assert(threads_.empty());
 		running_ = true;
 		threads_.reserve(numThreads);
-		for (int32_t i = 0; i < numThreads; ++i)
+		for (int i = 0; i < numThreads; ++i)
 		{
 			char id[32];
 #ifdef WIN32
-            sprintf_s(id,sizeof id, "%d",i);
+			sprintf_s(id,sizeof id, "%s",i);
 #else
 			snprintf(id, sizeof id, "%d", i);
 #endif // WIN32
@@ -43,6 +54,9 @@ namespace BaseLib
 		}
 	}
 
+	/// <summary>
+	/// Stops this instance.
+	/// </summary>
 	void ThreadPool::stop()
 	{
 		{
@@ -55,22 +69,10 @@ namespace BaseLib
 			boost::bind(&Thread::join, _1));
 	}
 
-	void ThreadPool::wait()
-	{
-		for_each(threads_.begin(),
-			threads_.end(),
-			boost::bind(&Thread::join, _1));
-	}
-
-	void ThreadPool::SetStop()
-	{
-		{
-			boost::lock_guard<boost::mutex> lock(mutex_);
-			running_ = false;
-			cond_.notify_all();
-		}
-	}
-
+	/// <summary>
+	/// Runs the specified task.
+	/// </summary>
+	/// <param name="task">The task obj.</param>
 	void ThreadPool::run(const Task& task)
 	{
 		if (threads_.empty())
@@ -85,6 +87,10 @@ namespace BaseLib
 		}
 	}
 
+	/// <summary>
+	/// 从任务队列中获取一个任务.
+	/// </summary>
+	/// <returns>ThreadPool.Task.</returns>
 	ThreadPool::Task ThreadPool::take()
 	{
 		boost::unique_lock<boost::mutex> lock(mutex_);
@@ -102,22 +108,8 @@ namespace BaseLib
 		return task;
 	}
 
-	// Added by xiaoli
-	void ThreadPool::setUserTaskCallBack(UserTaskCallBack cb)
-	{
-		user_tast_cb_ = cb;
-	}
-	// End
-
 	void ThreadPool::runInThread()
 	{
-		// Added by xiaoli
-		if (user_tast_cb_)
-		{
-			user_tast_cb_();
-		}
-		// End
-
 		try
 		{
 			while (running_)

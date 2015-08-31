@@ -1,4 +1,3 @@
-
 #ifndef BASE_THREAD_H
 #define BASE_THREAD_H
 
@@ -13,33 +12,39 @@ using namespace std;
 namespace BaseLib
 {
 
-	class Thread : boost::noncopyable
-	{
-	public:
-		typedef boost::function<void ()> ThreadFunc;
-		typedef boost::shared_ptr<boost::thread> ThreadPtr;
+class Thread : boost::noncopyable
+{
+public:
+    typedef boost::function<void ()> ThreadFunc;
+    typedef boost::shared_ptr<boost::thread> ThreadPtr;
 
-		explicit Thread(const ThreadFunc&, const string& name = string());
-		~Thread();
+    explicit Thread(const ThreadFunc&, const string& name = string());
+    ~Thread();
 
-		void start();
+    void start();
 
-		void join();
+    void join();
 
-		bool started() const { return started_; }
+    bool started() const
+    {
+        return started_;
+    }
 
-		const string& name() const { return name_; }
+    const string& name() const
+    {
+        return name_;
+    }
 
-	private:
-		bool       started_;
-		bool       joined_;
+private:
+    bool       started_;
+    bool       joined_;
 
-		ThreadFunc func_;
-		string     name_;
+    ThreadFunc func_;
+    string     name_;
 
-		ThreadPtr pThread_;
+    ThreadPtr pThread_;
 
-	};
+};
 
 }
 #endif
